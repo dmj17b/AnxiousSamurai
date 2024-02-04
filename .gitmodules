@@ -1,0 +1,3 @@
+[submodule "include/OSC"]
+	path = include/OSC
+	url = https://github.com/CNMAT/OSC
