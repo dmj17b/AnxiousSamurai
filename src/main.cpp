@@ -9,6 +9,7 @@
 #include <OSCMessage.h>
 #include <OSCBundle.h>
 #include <OSCData.h>
+#include <time.h>
 
 // Setting up the WiFi connection
 char ssid[] = "911Wifi";          // your network SSID (name)
@@ -29,16 +30,20 @@ OSCErrorCode error;
 // need to define DATA_PIN.  For led chipsets that are SPI based (four wires - data, clock,
 // ground, and power), like the LPD8806 define both DATA_PIN and CLOCK_PIN
 // Clock pin only needed for SPI based chipsets when not using hardware SPI
-#define DATA_PIN 12
+#define DATA_PIN 25
 
 // Define the array of leds
 CRGB leds[NUM_LEDS];
 
 int lightState = 0;
 
-// Function prototypes
+// Different LED effects
 void loadingBar(CRGB color,int speed);
 void splotchyFun(CRGB color, int speed);
+void flameLEDs();
+void heaven();
+void ocean();
+void glamorous();
 
 
 
@@ -85,8 +90,8 @@ void loop() {
     }
     if (!msg.hasError()) {
       Serial.print("Received message: ");
-      lightState = msg.getBoolean(0);
-      Serial.println(msg.getBoolean(0));
+      lightState = msg.getInt(0);
+      Serial.println(lightState);
     } else {
       error = msg.getError();
       Serial.print("error: ");
@@ -94,24 +99,43 @@ void loop() {
     }
   }
 
-  if(lightState == 1){
-    Serial.println("Light is on");
-    for(int i=0; i<NUM_LEDS; i++) {
-      leds[i] = CRGB(0,0,150);
-      FastLED.show();
-      FastLED.setBrightness(50);
-      delay(50);
-    }
-  } else if(lightState == 0){
-    for(int i=NUM_LEDS; i>=0; i--) {
+  // Switch statement to determine which LED effect to run
+switch(lightState){
+  case 0:
+  // Turn off all LEDs
+    for(int i = 0; i < NUM_LEDS; i++) {
       leds[i] = CRGB::Black;
-      FastLED.show();
-      delay(50);
     }
-  }
-
+    FastLED.show();
+    break;
+  case 1:
+  //Flame LED effect
+    Serial.println("Flame effect");
+    glamorous();
+    break;
+  case 2:
+    Serial.println("Heaven effect");
+    heaven();
+    break;
+  case 3:
+    Serial.println("Flame effect");
+    flameLEDs();
+    break;  
+  case 4:
+    Serial.println("Ocean effect");
+    ocean();  
+    break;
+  default:
+  // Turn off all LEDs
+    for(int i = 0; i < NUM_LEDS; i++) {
+      leds[i] = CRGB::Black;
+    }
+    FastLED.show();
+}
 
 }
+
+
 
 
 /*FUNCTIONS*/
@@ -162,4 +186,57 @@ void splotchyFun(CRGB color, int speed){
   FastLED.show();
   delay(100); // Delay for effect
 
+}
+
+// Orange and red flame vibes
+void flameLEDs(){
+  int i = random(0,NUM_LEDS);
+  int r = 150+random(100);  // Random number between 150 and 255 (more red than green)
+  int g = random(100);  // Random number between 0 and 100 (more green than blue)
+  int b = 0;  //no blue
+  leds[i] = CRGB(g, r, b);  // Set the LED to the random color
+  FastLED.show();
+  FastLED.setBrightness(255);
+  delay(random(10));
+}
+
+// Pink and white heaven vibes
+void heaven(){
+  int i = random(0,NUM_LEDS);
+  int r = 50+random(100);  // Random number between 150 and 255 (more red than green)
+  int g = random(100);  // Random number between 0 and 100 (more green than blue)
+  int b = 150+random(100);  //no blue
+  leds[i] = CRGB(g, r, b);  // Set the LED to the random color
+  FastLED.show();
+  FastLED.setBrightness(255);
+  delay(random(10));
+}
+
+// Blue and green ocean vibes
+void ocean(){
+  int t = micros()/1000000;
+  Serial.println(t);
+  int i = random(0,NUM_LEDS);
+  int r = 0;  // Random number between 150 and 255 (more red than green)
+  int g = 50+random(150);  // Random number between 0 and 100 (more green than blue)
+  int b = 100+random(150);  //no blue
+  leds[i] = CRGB(g, r, b);  // Set the LED to the random color
+  FastLED.show();
+  FastLED.setBrightness(255);
+  delay(random(50));
+}
+
+// Glamorous effect
+void glamorous(){
+  for(int i = 0; i < NUM_LEDS; i++){
+    float t = millis()/1000.5;
+    int r = 5;  // Random number between 150 and 255 (more red than green)
+    int g = 5;  // Random number between 0 and 100 (more green than blue)
+    int b = 5;//*abs(cos(t));  //no blue
+    leds[i] = CRGB(g,r,b);
+  }
+      FastLED.show();
+
+  
+ 
 }
